@@ -2,4 +2,4 @@
 
 Swedish work-day calendar.
 
-**Live page:** https://markus-holm.github.io/working-days-sweden/
+**Live page:** https://kalender.beardedsoftware.se/
