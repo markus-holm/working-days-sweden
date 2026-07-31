@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arbetskalender · Sverige</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── CSS variables — dark default ── */
+  :root {
+    --bg:#0d1117; --bg-card:#161b22; --bg-deep:#0d1117;
+    --bg-hdr:linear-gradient(135deg,#161b22 0%,#0d1117 100%);
+    --border:#21262d; --border2:#30363d;
+    --text:#e6edf3; --text-sub:#8b949e; --text-mute:#6e7681; --text-card:#c9d1d9;
+    --accent:#58a6ff; --btn-bg:#21262d; --btn-hover:#30363d; --inp-bg:#161b22;
+    --row-alt:#0a0d11; --bar-bg:#0d1117; --bar-we:#21262d; --tfoot-bdr:#30363d;
+    --code-bg:#0d1117; --code-key:#79c0ff; --code-str:#a5d6ff; --code-num:#f8c555; --code-punc:#8b949e;
+    --pill-bg:#1f3a1f; --pill-fg:#3fb950; --hdate-col:#e07b39;
+    --touch:44px;
+  }
+  [data-theme="light"] {
+    --bg:#f6f8fa; --bg-card:#ffffff; --bg-deep:#f0f2f5;
+    --bg-hdr:linear-gradient(135deg,#ffffff 0%,#f0f2f5 100%);
+    --border:#d0d7de; --border2:#b0bac4;
+    --text:#1a1f27; --text-sub:#57606a; --text-mute:#8c959f; --text-card:#24292f;
+    --accent:#0969da; --btn-bg:#f0f2f5; --btn-hover:#e2e5e9; --inp-bg:#ffffff;
+    --row-alt:#f0f2f5; --bar-bg:#e8eaed; --bar-we:#d0d7de; --tfoot-bdr:#b0bac4;
+    --code-bg:#f6f8fa; --code-key:#0550ae; --code-str:#0a3069; --code-num:#953800; --code-punc:#57606a;
+    --pill-bg:#dafbe1; --pill-fg:#1a7f37; --hdate-col:#c0530a;
+  }
+
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Mono','Courier New',monospace;
+    transition:background 0.2s,color 0.2s; overflow-x:hidden;
+  }
+
+  /* ════ HEADER — mobile first ════ */
+  .hdr {
+    background:var(--bg-hdr); border-bottom:1px solid var(--border);
+    padding:16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .hdr-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .hdr-label {
+    font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:4px; font-family:'DM Sans',sans-serif;
+  }
+  .hdr-year {
+    font-family:'DM Sans',sans-serif; font-size:36px; font-weight:700;
+    color:var(--text); line-height:1; letter-spacing:-1px;
+  }
+  .hdr-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .yctrl { display:flex; align-items:center; gap:6px; }
+  .ybtn {
+    width:var(--touch); height:var(--touch); background:var(--btn-bg);
+    border:1px solid var(--border); color:var(--text);
+    font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    border-radius:6px; transition:all 0.15s; -webkit-tap-highlight-color:transparent;
+  }
+  .ybtn:active { background:var(--btn-hover); }
+  .yinp {
+    background:var(--inp-bg); border:1px solid var(--border); color:var(--text);
+    font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600;
+    width:72px; text-align:center; padding:0 4px; border-radius:6px; outline:none;
+    height:var(--touch);
+  }
+  .yinp:focus { border-color:var(--accent); }
+  .theme-btns { display:flex; align-items:center; gap:5px; }
+  .tbtn {
+    padding:0 10px; min-height:var(--touch); border-radius:6px;
+    border:1px solid var(--border); background:var(--btn-bg); color:var(--text-sub);
+    font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; transition:all 0.15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tbtn:active { border-color:var(--accent); color:var(--accent); }
+  .tbtn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* ════ TAB NAV ════ */
+  .nav {
+    display:flex; border-bottom:1px solid var(--border); background:var(--bg-card);
+    padding:0 16px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-btn {
+    padding:0 16px; height:var(--touch); white-space:nowrap;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--text-sub);
+    background:transparent; border:none; border-bottom:2px solid transparent;
+    cursor:pointer; transition:all 0.15s; margin-bottom:-1px; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav-btn:active { color:var(--text); }
+  .nav-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+  /* ════ SUMMARY BAR — 2 cols mobile ════ */
+  .sbar {
+    display:grid; grid-template-columns:repeat(2,1fr);
+    gap:1px; background:var(--border); border-bottom:1px solid var(--border);
+  }
+  .scard { background:var(--bg-card); padding:14px 16px; transition:background 0.2s; }
+  .slbl { font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-sub); margin-bottom:4px; }
+  .sval { font-family:'DM Sans',sans-serif; font-size:26px; font-weight:700; line-height:1; margin-bottom:2px; }
+  .ssub { font-size:10px; color:var(--text-mute); }
+
+  /* ════ MAIN ════ */
+  .main { padding:16px; }
+  .sec-title {
+    font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+
+  /* ════ MONTH GRID — 1 col mobile ════ */
+  .mgrid { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:28px; }
+  .mcard {
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:8px; padding:14px 16px; transition:border-color 0.2s;
+  }
+  .mname {
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+    color:var(--text); margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .mdays { font-size:10px; color:var(--text-mute); font-weight:500; }
+  .mstats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+  .sbox { padding:8px 4px; text-align:center; background:var(--bg-deep); border-radius:4px; }
+  .snum { font-family:'DM Sans',sans-serif; font-size:20px; font-weight:700; line-height:1; margin-bottom:2px; }
+  .slb2 { font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-mute); }
+  .hrow {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 10px; background:var(--bg-deep); border-radius:6px; border-left:2px solid #3fb950;
+  }
+  .hlbl { font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-sub); }
+  .hval { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:#3fb950; }
+  .barcont { height:5px; background:var(--bar-bg); border-radius:3px; margin-top:10px; display:flex; overflow:hidden; }
+  .bw { background:#3fb950; } .bh { background:#ffa657; } .bwe { background:var(--bar-we); }
+
+  /* ════ HOLIDAY LIST ════ */
+  .hlist { display:flex; flex-direction:column; gap:6px; margin-bottom:28px; }
+  .hitem {
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
+  }
+  .hdate { font-size:11px; font-weight:600; color:var(--hdate-col); min-width:82px; letter-spacing:0.03em; flex-shrink:0; }
+  .hname { font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text-card); }
+
+  /* ════ TABLE — scrollable on mobile ════ */
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--border); border-radius:8px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; min-width:360px; }
+  th {
+    padding:9px 8px; text-align:right; font-weight:600; font-size:9px;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--text-sub);
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  th:first-child { text-align:left; padding-left:12px; }
+  td { padding:9px 8px; text-align:right; border-bottom:1px solid var(--border); }
+  td:first-child { text-align:left; padding-left:12px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--text-card); }
+  tfoot td { border-top:2px solid var(--tfoot-bdr); font-family:'DM Sans',sans-serif; font-weight:700; border-bottom:none; }
+  tr.alt { background:var(--row-alt); }
+  .ftxt {
+    margin-top:28px; padding:14px 0; border-top:1px solid var(--border);
+    font-size:9px; color:var(--text-mute); letter-spacing:0.1em;
+    text-transform:uppercase; text-align:center;
+  }
+
+  /* ── Color utilities ── */
+  .cw{color:#3fb950;} .cr{color:#e07b39;} .cwe{color:#1d77d4;} .ct{color:var(--text);} .cd{color:var(--text-sub);}
+
+  /* ── Tab panels ── */
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* ════ API TAB ════ */
+  .api-wrap { padding:16px; }
+  .endpoint-card { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:20px; }
+  .endpoint-hdr {
+    display:flex; align-items:center; gap:8px; padding:12px 14px;
+    background:var(--bg-card); border-bottom:1px solid var(--border); flex-wrap:wrap;
+  }
+  .method-pill {
+    font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700;
+    padding:3px 7px; border-radius:3px; background:#1a3a5c; color:#79c0ff;
+    letter-spacing:0.05em; flex-shrink:0;
+  }
+  .endpoint-path {
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+    color:var(--text); flex:1; word-break:break-all; min-width:0;
+  }
+  .status-pill {
+    font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700;
+    padding:3px 7px; border-radius:3px; background:var(--pill-bg); color:var(--pill-fg); flex-shrink:0;
+  }
+  .copy-btn {
+    font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600;
+    padding:0 14px; height:var(--touch); border-radius:6px;
+    border:1px solid var(--border); background:var(--btn-bg); color:var(--text-sub);
+    cursor:pointer; transition:all 0.15s; letter-spacing:0.05em;
+    width:100%; margin-top:6px; -webkit-tap-highlight-color:transparent;
+  }
+  .copy-btn:active { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.copied { background:var(--pill-bg); border-color:var(--pill-fg); color:var(--pill-fg); }
+  .params-row {
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    background:var(--bg-deep); border-bottom:1px solid var(--border); flex-wrap:wrap;
+  }
+  .param-label { font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-sub); white-space:nowrap; }
+  .param-select, .param-input {
+    background:var(--inp-bg); border:1px solid var(--border); color:var(--text);
+    font-family:'IBM Plex Mono',monospace; font-size:13px;
+    padding:0 8px; border-radius:6px; outline:none; height:var(--touch);
+  }
+  .param-input { width:82px; }
+  .param-select:focus, .param-input:focus { border-color:var(--accent); }
+  .desc-txt {
+    font-size:12px; color:var(--text-sub); padding:10px 14px;
+    background:var(--bg-deep); border-bottom:1px solid var(--border);
+    font-family:'DM Sans',sans-serif; line-height:1.5;
+  }
+  .code-block {
+    background:var(--code-bg); padding:14px;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.7;
+    color:var(--text); max-height:300px; overflow-y:auto;
+  }
+  .jk{color:var(--code-key);} .js{color:var(--code-str);} .jn{color:var(--code-num);} .jp{color:var(--code-punc);}
+  .field-ref th:first-child, .field-ref td:first-child { min-width:120px; }
+
+  /* ════ TABLET 600px+ ════ */
+  @media (min-width:600px) {
+    .hdr { flex-direction:row; align-items:flex-end; padding:24px 28px; flex-wrap:wrap; }
+    .hdr-top { flex:none; }
+    .hdr-bottom { flex:1; justify-content:flex-start; }
+    .theme-btns { margin-left:auto; }
+    .hdr-year { font-size:44px; letter-spacing:-2px; }
+    .nav { padding:0 28px; }
+    .sbar { grid-template-columns:repeat(4,1fr); }
+    .scard { padding:18px 20px; }
+    .sval { font-size:30px; }
+    .main, .api-wrap { padding:22px 28px; }
+    .mgrid { grid-template-columns:repeat(2,1fr); }
+    .hlist { display:grid; grid-template-columns:repeat(2,1fr); }
+    .copy-btn { width:auto; margin-top:0; margin-left:auto; }
+    .code-block { font-size:12px; max-height:380px; }
+    .tbtn:hover { border-color:var(--accent); color:var(--accent); }
+    .ybtn:hover { background:var(--btn-hover); border-color:var(--accent); color:var(--accent); }
+    .mcard:hover { border-color:var(--border2); transform:translateY(-1px); }
+    .scard:hover { background:var(--bg-deep); }
+    .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .nav-btn:hover { color:var(--text); }
+  }
+
+  /* ════ DESKTOP 960px+ ════ */
+  @media (min-width:960px) {
+    .hdr { padding:32px 40px 24px; }
+    .hdr-year { font-size:52px; }
+    .nav { padding:0 40px; }
+    .scard { padding:22px 28px; }
+    .sval { font-size:34px; }
+    .main, .api-wrap { padding:28px 40px; }
+    .mgrid { grid-template-columns:repeat(3,1fr); gap:10px; }
+    .hlist { grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+    .sec-title { font-size:10px; }
+    .slbl { font-size:10px; }
+    .code-block { max-height:420px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-label">Arbetskalender &middot; Sverige</div>
+      <div class="hdr-year" id="hdr-year">2026</div>
+    </div>
+    <div class="theme-btns">
+      <button class="tbtn" data-theme="auto"  id="tbtn-auto">Auto</button>
+      <button class="tbtn" data-theme="light" id="tbtn-light">Ljust</button>
+      <button class="tbtn" data-theme="dark"  id="tbtn-dark">Mörkt</button>
+    </div>
+  </div>
+  <div class="hdr-bottom">
+    <div class="yctrl">
+      <button class="ybtn" id="year-prev">&#8249;</button>
+      <input  class="yinp" id="year-input" type="number" value="2026" min="1990" max="2100" inputmode="numeric">
+      <button class="ybtn" id="year-next">&#8250;</button>
+    </div>
+  </div>
+</header>
+
+<!-- TAB NAV -->
+<nav class="nav">
+  <button class="nav-btn active" data-tab="calendar">Kalender</button>
+  <button class="nav-btn"        data-tab="api">API / JSON</button>
+</nav>
+
+<!-- ════ CALENDAR TAB ════ -->
+<div class="tab-panel active" id="tab-calendar">
+
+  <!-- Summary bar -->
+  <div class="sbar">
+    <div class="scard">
+      <div class="slbl">Arbetsdagar</div>
+      <div class="sval cw" id="tot-workdays">—</div>
+      <div class="ssub" id="tot-hours">—</div>
+    </div>
+    <div class="scard">
+      <div class="slbl">Helgdagar</div>
+      <div class="sval cr" id="tot-red">—</div>
+      <div class="ssub">inkl. på lör/sön</div>
+    </div>
+    <div class="scard">
+      <div class="slbl">Lör + Sön</div>
+      <div class="sval cwe" id="tot-we">—</div>
+      <div class="ssub" id="tot-we-sub">—</div>
+    </div>
+    <div class="scard">
+      <div class="slbl">Årets dagar</div>
+      <div class="sval ct" id="tot-days">—</div>
+      <div class="ssub" id="tot-off">—</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sec-title">Månadsöversikt</div>
+    <div class="mgrid" id="month-grid"></div>
+
+    <div class="sec-title" id="holidays-title">Svenska helgdagar</div>
+    <div class="hlist" id="holiday-list"></div>
+
+    <div class="sec-title">Årssammanställning</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">Månad</th>
+            <th>Dagar</th><th>Arbets</th><th>Timmar</th>
+            <th>Röda</th><th>Helg</th><th>Ledigt</th>
+          </tr>
+        </thead>
+        <tbody id="year-tbody"></tbody>
+        <tfoot id="year-tfoot"></tfoot>
+      </table>
+    </div>
+    <div class="ftxt" id="cal-footer"></div>
+  </div>
+</div>
+
+<!-- ════ API TAB ════ -->
+<div class="tab-panel" id="tab-api">
+  <div class="api-wrap">
+    <div class="sec-title">API &ndash; JSON endpoints</div>
+
+    <!-- Endpoint 1: year -->
+    <div class="endpoint-card">
+      <div class="endpoint-hdr">
+        <span class="method-pill">GET</span>
+        <span class="endpoint-path" id="ep1-path">/work-days/2026</span>
+        <span class="status-pill">200 OK</span>
+        <button class="copy-btn" id="copy-year">Kopiera JSON</button>
+      </div>
+      <div class="desc-txt">Returnerar arbetsdagar, timmar och helgdagar för hela året.</div>
+      <div class="params-row">
+        <span class="param-label">År</span>
+        <input class="param-input" id="api-year-input" type="number" value="2026" min="1990" max="2100" inputmode="numeric">
+      </div>
+      <pre class="code-block" id="year-json"></pre>
+    </div>
+
+    <!-- Endpoint 2: month -->
+    <div class="endpoint-card">
+      <div class="endpoint-hdr">
+        <span class="method-pill">GET</span>
+        <span class="endpoint-path" id="ep2-path">/work-days/2026/1</span>
+        <span class="status-pill">200 OK</span>
+        <button class="copy-btn" id="copy-month">Kopiera JSON</button>
+      </div>
+      <div class="desc-txt">Returnerar arbetsdagar, timmar och helgdagar för en specifik månad.</div>
+      <div class="params-row">
+        <span class="param-label">År</span>
+        <input class="param-input" id="api-month-year-input" type="number" value="2026" min="1990" max="2100" inputmode="numeric">
+        <span class="param-label">Månad</span>
+        <select class="param-select" id="api-month-select"></select>
+      </div>
+      <pre class="code-block" id="month-json"></pre>
+    </div>
+
+    <!-- Field reference -->
+    <div class="sec-title" style="margin-top:8px">Fältbeskrivning</div>
+    <div class="table-wrap">
+      <table class="field-ref">
+        <thead>
+          <tr>
+            <th style="text-align:left">Fält</th>
+            <th style="text-align:left">Typ</th>
+            <th style="text-align:left">Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code style="color:var(--accent)">year</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Årtal</td></tr>
+          <tr class="alt"><td><code style="color:var(--accent)">month</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Månadsnummer (1–12)</td></tr>
+          <tr><td><code style="color:var(--accent)">name</code></td><td><code style="color:#e07b39">string</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Månadens namn</td></tr>
+          <tr class="alt"><td><code style="color:var(--accent)">total_days</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Totalt antal dagar</td></tr>
+          <tr><td><code style="color:var(--accent)">work_days</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Arbetsdagar (mån–fre exkl. helgdagar)</td></tr>
+          <tr class="alt"><td><code style="color:var(--accent)">work_hours</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Timmar (work_days × 8)</td></tr>
+          <tr><td><code style="color:var(--accent)">weekend_days</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Lör + sön inkl. helgdagar</td></tr>
+          <tr class="alt"><td><code style="color:var(--accent)">holidays</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Röda dagar inkl. på helg</td></tr>
+          <tr><td><code style="color:var(--accent)">days_off</code></td><td><code style="color:#e07b39">integer</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">Lediga dagar (total − work_days)</td></tr>
+          <tr class="alt"><td><code style="color:var(--accent)">public_holidays</code></td><td><code style="color:#e07b39">array</code></td><td style="text-align:left;font-family:'DM Sans',sans-serif">[{date, name}] per helgdag</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ftxt">Statisk JSON &middot; Inga externa anrop &middot; Beräknas i webbläsaren</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CALENDAR LOGIC
+// ══════════════════════════════════════
+var MONTH_NAMES = ["Januari","Februari","Mars","April","Maj","Juni","Juli","Augusti","September","Oktober","November","December"];
+var DAY_SHORT   = ["Sön","Mån","Tis","Ons","Tor","Fre","Lör"];
+
+function easterDate(yr) {
+  var a=yr%19,b=Math.floor(yr/100),c=yr%100,d=Math.floor(b/4),e=b%4,
+      f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+      h=(19*a+b-d-g+15)%30,ii=Math.floor(c/4),k=c%4,
+      l=(32+2*e+2*ii-h-k)%7,mm=Math.floor((a+11*h+22*l)/451),
+      mo=Math.floor((h+l-7*mm+114)/31),dy=((h+l-7*mm+114)%31)+1;
+  return new Date(yr,mo-1,dy);
+}
+function addDays(d,n){ return new Date(d.getTime()+n*86400000); }
+function toKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+function getMidsommarafton(yr){
+  for(var dd=19;dd<=25;dd++){ var dt=new Date(yr,5,dd); if(dt.getDay()===5) return dt; }
+  return null;
+}
+function getAllaHelgonsdag(yr){
+  for(var dd=31;dd<=37;dd++){
+    var mo=dd>31?10:9, dy=dd>31?dd-31:dd, dt=new Date(yr,mo,dy);
+    if(dt.getDay()===6) return dt;
+  }
+  return null;
+}
+function getHolidayMap(yr){
+  var easter=easterDate(yr), mid=getMidsommarafton(yr), ah=getAllaHelgonsdag(yr), m={};
+  m[yr+"-01-01"]="Nyårsdagen";
+  m[yr+"-01-06"]="Trettondagen";
+  m[toKey(addDays(easter,-2))]="Långfredagen";
+  m[toKey(easter)]="Påskdagen";
+  m[toKey(addDays(easter,1))]="Annandag påsk";
+  m[yr+"-05-01"]="Första maj";
+  m[toKey(addDays(easter,39))]="Kristi himmelsfärdsdag";
+  m[toKey(addDays(easter,49))]="Pingstdagen";
+  m[yr+"-06-06"]="Nationaldagen";
+  if(mid){ m[toKey(mid)]="Midsommarafton"; m[toKey(addDays(mid,1))]="Midsommardagen"; }
+  if(ah) m[toKey(ah)]="Alla helgons dag";
+  m[yr+"-12-24"]="Julafton";
+  m[yr+"-12-25"]="Juldagen";
+  m[yr+"-12-26"]="Annandag jul";
+  m[yr+"-12-31"]="Nyårsafton";
+  return m;
+}
+function calcMonth(yr,mo,hset){
+  var dim=new Date(yr,mo+1,0).getDate(), workdays=0, weekends=0, redDays=0;
+  for(var d=1;d<=dim;d++){
+    var date=new Date(yr,mo,d), key=toKey(date), dow=date.getDay(), isWE=dow===0||dow===6, isH=hset.has(key);
+    if(isH){ redDays++; if(isWE) weekends++; }
+    else if(isWE){ weekends++; }
+    else{ workdays++; }
+  }
+  return {workdays:workdays,weekends:weekends,redDays:redDays,total:dim};
+}
+function formatDate(dateStr){
+  var p=dateStr.split("-"), d=new Date(+p[0],+p[1]-1,+p[2],12);
+  return DAY_SHORT[d.getDay()]+" "+d.getDate()+" "+MONTH_NAMES[d.getMonth()].slice(0,3).toLowerCase();
+}
+
+// ══════════════════════════════════════
+// JSON BUILDERS
+// ══════════════════════════════════════
+function buildYearJson(yr){
+  var hmap=getHolidayMap(yr), hset=new Set(Object.keys(hmap));
+  var months=MONTH_NAMES.map(function(name,i){
+    var s=calcMonth(yr,i,hset), moNum=i+1, hols=[];
+    Object.keys(hmap).forEach(function(k){ if(+k.split("-")[1]===moNum) hols.push({date:k,name:hmap[k]}); });
+    hols.sort(function(a,b){ return a.date<b.date?-1:1; });
+    return {month:moNum,name:name,total_days:s.total,work_days:s.workdays,work_hours:s.workdays*8,weekend_days:s.weekends,holidays:s.redDays,days_off:s.total-s.workdays,public_holidays:hols};
+  });
+  var tw=months.reduce(function(a,m){return a+m.work_days;},0);
+  var tr=months.reduce(function(a,m){return a+m.holidays;},0);
+  var twe=months.reduce(function(a,m){return a+m.weekend_days;},0);
+  var td=months.reduce(function(a,m){return a+m.total_days;},0);
+  return {year:yr,total_days:td,work_days:tw,work_hours:tw*8,weekend_days:twe,holidays:tr,days_off:td-tw,months:months};
+}
+function buildMonthJson(yr,mo){
+  var hmap=getHolidayMap(yr), hset=new Set(Object.keys(hmap));
+  var s=calcMonth(yr,mo-1,hset), hols=[];
+  Object.keys(hmap).forEach(function(k){ if(+k.split("-")[1]===mo) hols.push({date:k,name:hmap[k]}); });
+  hols.sort(function(a,b){ return a.date<b.date?-1:1; });
+  return {year:yr,month:mo,name:MONTH_NAMES[mo-1],total_days:s.total,work_days:s.workdays,work_hours:s.workdays*8,weekend_days:s.weekends,holidays:s.redDays,days_off:s.total-s.workdays,public_holidays:hols};
+}
+
+// ══════════════════════════════════════
+// SYNTAX HIGHLIGHT
+// ══════════════════════════════════════
+function syntaxHL(obj){
+  var json=JSON.stringify(obj,null,2);
+  return json.split("\n").map(function(line){
+    line=line.replace(/^(\s*)("[\w_]+")\s*:/g,function(m,sp,key){ return sp+'<span class="jk">'+key+'</span>:'; });
+    line=line.replace(/:\s*("(?:[^"\\]|\\.)*")/g,function(m,v){ return ': <span class="js">'+v+'</span>'; });
+    line=line.replace(/:\s*(-?\d+)/g,function(m,v){ return ': <span class="jn">'+v+'</span>'; });
+    line=line.replace(/^(\s*)("(?:[^"\\]|\\.)*")(,?)$/g,function(m,sp,v,c){ return sp+'<span class="js">'+v+'</span>'+c; });
+    line=line.replace(/([{}\[\]])/g,function(m,p){ return '<span class="jp">'+p+'</span>'; });
+    return line;
+  }).join("\n");
+}
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+var state = {
+  year: new Date().getFullYear(),
+  themePref: "auto",
+  apiYear: new Date().getFullYear(),
+  apiMonth: 1,
+  apiMonthYear: new Date().getFullYear()
+};
+
+// ══════════════════════════════════════
+// THEME
+// ══════════════════════════════════════
+var sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(e){ sysDark=e.matches; applyTheme(); });
+
+function applyTheme(){
+  var isDark = state.themePref==="dark" || (state.themePref==="auto" && sysDark);
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+  document.querySelectorAll(".tbtn").forEach(function(b){ b.classList.toggle("active", b.dataset.theme===state.themePref); });
+}
+
+// ══════════════════════════════════════
+// RENDER CALENDAR
+// ══════════════════════════════════════
+function renderCalendar(){
+  var yr=state.year, H=8;
+  var hmap=getHolidayMap(yr), hset=new Set(Object.keys(hmap));
+  var months=MONTH_NAMES.map(function(name,i){ var s=calcMonth(yr,i,hset); return {name:name,workdays:s.workdays,weekends:s.weekends,redDays:s.redDays,total:s.total}; });
+  var tot=months.reduce(function(acc,m){ return {workdays:acc.workdays+m.workdays,weekends:acc.weekends+m.weekends,redDays:acc.redDays+m.redDays,total:acc.total+m.total}; },{workdays:0,weekends:0,redDays:0,total:0});
+
+  document.getElementById("hdr-year").textContent=yr;
+  document.getElementById("year-input").value=yr;
+  document.getElementById("tot-workdays").textContent=tot.workdays;
+  document.getElementById("tot-hours").textContent=tot.workdays*H+" timmar";
+  document.getElementById("tot-red").textContent=tot.redDays;
+  document.getElementById("tot-we").textContent=tot.weekends;
+  document.getElementById("tot-we-sub").textContent="varav "+(tot.redDays-(tot.total-tot.workdays-tot.weekends))+" helgdagar";
+  document.getElementById("tot-days").textContent=tot.total;
+  document.getElementById("tot-off").textContent=(tot.total-tot.workdays)+" lediga";
+
+  document.getElementById("month-grid").innerHTML=months.map(function(m){
+    var wp=(m.workdays/m.total*100).toFixed(1), rp=(m.redDays/m.total*100).toFixed(1), ep=(m.weekends/m.total*100).toFixed(1);
+    return '<div class="mcard">'+
+      '<div class="mname"><span>'+m.name+'</span><span class="mdays">'+m.total+' dagar</span></div>'+
+      '<div class="mstats">'+
+        '<div class="sbox"><div class="snum cw">'+m.workdays+'</div><div class="slb2">Arbets</div></div>'+
+        '<div class="sbox"><div class="snum cr">'+m.redDays+'</div><div class="slb2">Röda</div></div>'+
+        '<div class="sbox"><div class="snum cwe">'+m.weekends+'</div><div class="slb2">Helg</div></div>'+
+      '</div>'+
+      '<div class="hrow"><span class="hlbl">Arbetstimmar</span><span class="hval">'+m.workdays*H+' h</span></div>'+
+      '<div class="barcont"><div class="bw" style="width:'+wp+'%"></div><div class="bh" style="width:'+rp+'%"></div><div class="bwe" style="width:'+ep+'%"></div></div>'+
+    '</div>';
+  }).join("");
+
+  document.getElementById("holidays-title").textContent="Svenska helgdagar "+yr;
+  var sorted=Object.entries(hmap).sort(function(a,b){ return a[0]<b[0]?-1:1; });
+  document.getElementById("holiday-list").innerHTML=sorted.map(function(e){
+    return '<div class="hitem"><span class="hdate">'+formatDate(e[0])+'</span><span class="hname">'+e[1]+'</span></div>';
+  }).join("");
+
+  document.getElementById("year-tbody").innerHTML=months.map(function(m,i){
+    return '<tr'+(i%2===1?' class="alt"':'')+'>'+
+      '<td>'+m.name+'</td><td class="cd">'+m.total+'</td>'+
+      '<td class="cw" style="font-weight:600">'+m.workdays+'</td>'+
+      '<td class="cw">'+m.workdays*H+'h</td>'+
+      '<td class="cr">'+m.redDays+'</td>'+
+      '<td class="cwe">'+m.weekends+'</td>'+
+      '<td class="cd">'+(m.total-m.workdays)+'</td></tr>';
+  }).join("");
+  document.getElementById("year-tfoot").innerHTML=
+    '<tr><td>TOTALT</td><td class="ct">'+tot.total+'</td><td class="cw">'+tot.workdays+'</td><td class="cw">'+tot.workdays*H+'h</td><td class="cr">'+tot.redDays+'</td><td class="cwe">'+tot.weekends+'</td><td class="cd">'+(tot.total-tot.workdays)+'</td></tr>';
+  document.getElementById("cal-footer").textContent="Beräknat enligt svenska helgdagar · 8h arbetsdag · "+yr;
+}
+
+// ══════════════════════════════════════
+// RENDER API
+// ══════════════════════════════════════
+function renderApiYear(){
+  var yr=state.apiYear;
+  document.getElementById("ep1-path").innerHTML="/work-days/<strong>"+yr+"</strong>";
+  document.getElementById("api-year-input").value=yr;
+  document.getElementById("year-json").innerHTML=syntaxHL(buildYearJson(yr));
+}
+function renderApiMonth(){
+  var yr=state.apiMonthYear, mo=state.apiMonth;
+  document.getElementById("ep2-path").innerHTML="/work-days/<strong>"+yr+"</strong>/<strong>"+mo+"</strong>";
+  document.getElementById("api-month-year-input").value=yr;
+  document.getElementById("api-month-select").value=mo;
+  document.getElementById("month-json").innerHTML=syntaxHL(buildMonthJson(yr,mo));
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+(function(){
+  var sel=document.getElementById("api-month-select");
+  MONTH_NAMES.forEach(function(name,i){
+    var opt=document.createElement("option");
+    opt.value=i+1; opt.textContent=(i+1)+" – "+name; sel.appendChild(opt);
+  });
+})();
+
+// ══════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════
+document.getElementById("year-prev").addEventListener("click",function(){ state.year--; renderCalendar(); });
+document.getElementById("year-next").addEventListener("click",function(){ state.year++; renderCalendar(); });
+document.getElementById("year-input").addEventListener("input",function(){
+  var v=parseInt(this.value); if(!isNaN(v)&&v>=1990&&v<=2100){ state.year=v; renderCalendar(); }
+});
+document.querySelectorAll(".tbtn").forEach(function(btn){
+  btn.addEventListener("click",function(){ state.themePref=this.dataset.theme; applyTheme(); });
+});
+document.querySelectorAll(".nav-btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var t=this.dataset.tab;
+    document.querySelectorAll(".nav-btn").forEach(function(b){ b.classList.remove("active"); });
+    this.classList.add("active");
+    document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+    document.getElementById("tab-"+t).classList.add("active");
+  });
+});
+document.getElementById("api-year-input").addEventListener("input",function(){
+  var v=parseInt(this.value); if(!isNaN(v)&&v>=1990&&v<=2100){ state.apiYear=v; renderApiYear(); }
+});
+document.getElementById("api-month-year-input").addEventListener("input",function(){
+  var v=parseInt(this.value); if(!isNaN(v)&&v>=1990&&v<=2100){ state.apiMonthYear=v; renderApiMonth(); }
+});
+document.getElementById("api-month-select").addEventListener("change",function(){
+  state.apiMonth=parseInt(this.value); renderApiMonth();
+});
+function copyJson(id,data){
+  navigator.clipboard.writeText(JSON.stringify(data,null,2)).then(function(){
+    var btn=document.getElementById(id);
+    btn.textContent="Kopierat!"; btn.classList.add("copied");
+    setTimeout(function(){ btn.textContent="Kopiera JSON"; btn.classList.remove("copied"); },1800);
+  });
+}
+document.getElementById("copy-year").addEventListener("click",function(){ copyJson("copy-year",buildYearJson(state.apiYear)); });
+document.getElementById("copy-month").addEventListener("click",function(){ copyJson("copy-month",buildMonthJson(state.apiMonthYear,state.apiMonth)); });
+
+// ══════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════
+applyTheme();
+renderCalendar();
+renderApiYear();
+renderApiMonth();
+</script>
+</body>
+</html>
