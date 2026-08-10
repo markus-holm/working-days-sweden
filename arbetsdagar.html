@@ -115,6 +115,31 @@
     color:var(--accent); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border);
   }
 
+  /* ════ CURRENT MONTH HERO ════ */
+  .hero {
+    background:var(--bg-card); border:1px solid var(--accent); border-radius:10px;
+    padding:16px 18px; margin-bottom:28px;
+  }
+  .hero-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px; }
+  .hero-name { font-family:'DM Sans',sans-serif; font-size:20px; font-weight:700; color:var(--text); }
+  .hero-today { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-sub); margin-top:2px; }
+  .hero-badge {
+    font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase;
+    color:#fff; background:var(--accent); padding:4px 8px; border-radius:4px; flex-shrink:0;
+  }
+  .hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+  .hero-box { padding:10px 6px; text-align:center; background:var(--bg-deep); border-radius:6px; }
+  .hero-num { font-family:'DM Sans',sans-serif; font-size:24px; font-weight:700; line-height:1; margin-bottom:2px; }
+  .hero-lbl { font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-mute); }
+  .hero-hours { display:flex; justify-content:space-between; align-items:center; padding:9px 12px; background:var(--bg-deep); border-radius:6px; border-left:2px solid #3fb950; margin-bottom:10px; }
+  .hero-hours .hlbl { font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-sub); }
+  .hero-hours .hval { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:700; color:#3fb950; }
+  .hero .barcont { margin-top:0; }
+
+  @media (min-width:600px) {
+    .hero-stats { grid-template-columns:repeat(3,1fr); max-width:420px; }
+  }
+
   /* ════ MONTH GRID — 1 col mobile ════ */
   .mgrid { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:28px; }
   .mcard {
@@ -328,6 +353,23 @@
   </div>
 
   <div class="main">
+    <div class="hero" id="hero-card" style="display:none">
+      <div class="hero-top">
+        <div>
+          <div class="hero-name" id="hero-name"></div>
+          <div class="hero-today" id="hero-today"></div>
+        </div>
+        <span class="hero-badge">Denna månad</span>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-box"><div class="hero-num cw" id="hero-workdays">—</div><div class="hero-lbl">Arbets</div></div>
+        <div class="hero-box"><div class="hero-num cr" id="hero-red">—</div><div class="hero-lbl">Röda</div></div>
+        <div class="hero-box"><div class="hero-num cwe" id="hero-we">—</div><div class="hero-lbl">Helg</div></div>
+      </div>
+      <div class="hero-hours"><span class="hlbl">Arbetstimmar</span><span class="hval" id="hero-hours">—</span></div>
+      <div class="barcont"><div class="bw" id="hero-bar-w"></div><div class="bh" id="hero-bar-h"></div><div class="bwe" id="hero-bar-e"></div></div>
+    </div>
+
     <div class="sec-title">Månadsöversikt</div>
     <div class="mgrid" id="month-grid"></div>
 
@@ -557,6 +599,25 @@ function renderCalendar(){
 
   document.getElementById("hdr-year").textContent=yr;
   document.getElementById("year-input").value=yr;
+
+  var today=new Date();
+  var heroCard=document.getElementById("hero-card");
+  if(yr===today.getFullYear()){
+    var mi=today.getMonth(), m=months[mi];
+    var wp=(m.workdays/m.total*100).toFixed(1), rp=(m.redDays/m.total*100).toFixed(1), ep=(m.weekends/m.total*100).toFixed(1);
+    document.getElementById("hero-name").textContent=m.name;
+    document.getElementById("hero-today").textContent="Idag "+DAY_SHORT[today.getDay()]+" "+today.getDate()+" "+m.name.slice(0,3).toLowerCase();
+    document.getElementById("hero-workdays").textContent=m.workdays;
+    document.getElementById("hero-red").textContent=m.redDays;
+    document.getElementById("hero-we").textContent=m.weekends;
+    document.getElementById("hero-hours").textContent=(m.workdays*H)+" h";
+    document.getElementById("hero-bar-w").style.width=wp+"%";
+    document.getElementById("hero-bar-h").style.width=rp+"%";
+    document.getElementById("hero-bar-e").style.width=ep+"%";
+    heroCard.style.display="block";
+  } else {
+    heroCard.style.display="none";
+  }
   document.getElementById("tot-workdays").textContent=tot.workdays;
   document.getElementById("tot-hours").textContent=tot.workdays*H+" timmar";
   document.getElementById("tot-red").textContent=tot.redDays;
