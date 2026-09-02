@@ -216,6 +216,8 @@
     font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
     color:var(--text); flex:1; word-break:break-all; min-width:0;
   }
+  .endpoint-path a { color:inherit; text-decoration:none; border-bottom:1px dashed var(--text-mute); }
+  .endpoint-path a:hover, .endpoint-path a:active { color:var(--accent); border-bottom-color:var(--accent); }
   .status-pill {
     font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700;
     padding:3px 7px; border-radius:3px; background:var(--pill-bg); color:var(--pill-fg); flex-shrink:0;
@@ -664,14 +666,14 @@ function renderCalendar(){
 // RENDER API
 // ══════════════════════════════════════
 function renderApiYear(){
-  var yr=state.apiYear;
-  document.getElementById("ep1-path").innerHTML="/work-days/<strong>"+yr+"</strong>";
+  var yr=state.apiYear, href="/work-days/"+yr+".json";
+  document.getElementById("ep1-path").innerHTML='<a href="'+href+'" target="_blank" rel="noopener">/work-days/<strong>'+yr+'</strong>.json</a>';
   document.getElementById("api-year-input").value=yr;
   document.getElementById("year-json").innerHTML=syntaxHL(buildYearJson(yr));
 }
 function renderApiMonth(){
-  var yr=state.apiMonthYear, mo=state.apiMonth;
-  document.getElementById("ep2-path").innerHTML="/work-days/<strong>"+yr+"</strong>/<strong>"+mo+"</strong>";
+  var yr=state.apiMonthYear, mo=state.apiMonth, href="/work-days/"+yr+"/"+mo+".json";
+  document.getElementById("ep2-path").innerHTML='<a href="'+href+'" target="_blank" rel="noopener">/work-days/<strong>'+yr+'</strong>/<strong>'+mo+'</strong>.json</a>';
   document.getElementById("api-month-year-input").value=yr;
   document.getElementById("api-month-select").value=mo;
   document.getElementById("month-json").innerHTML=syntaxHL(buildMonthJson(yr,mo));
